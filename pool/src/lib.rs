@@ -246,3 +246,16 @@ impl<'a, 'b, P: Pool> PoolProcessor<'a, 'b, P> {
         Ok(())
     }
 }
+
+fn next_account_infos<'a, 'b: 'a>(
+    iter: &mut std::slice::Iter<'a, AccountInfo<'b>>,
+    count: usize,
+) -> Result<&'a [AccountInfo<'b>], ProgramError> {
+    let accounts = iter.as_slice();
+    if accounts.len() < count {
+        return Err(ProgramError::NotEnoughAccountKeys);
+    }
+    let (accounts, remaining) = accounts.split_at(count);
+    *iter = remaining.into_iter();
+    Ok(accounts)
+}
