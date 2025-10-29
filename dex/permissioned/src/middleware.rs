@@ -558,6 +558,33 @@ pub enum ErrorCode {
     InvalidTargetProgram,
 }
 
+#[derive(Accounts)]
+#[instruction(bump: u8, bump_init: u8)]
+pub struct InitAccount<'info> {
+    #[account(address = dex::ID)]
+    pub dex_program: AccountInfo<'info>,
+    #[account(address = system_program::ID)]
+    pub system_program: AccountInfo<'info>,
+    #[account(
+        init,
+        seeds = [b"open-orders", dex_program.key.as_ref(), market.key.as_ref(), authority.key.as_ref()],
+        bump = bump,
+        payer = authority,
+        owner = dex::ID,
+        space = size_of::<OpenOrders>() + SERUM_PADDING,
+    )]
+    pub open_orders: AccountInfo<'info>,
+    #[account(signer)]
+    pub authority: AccountInfo<'info>,
+    pub market: AccountInfo<'info>,
+    pub rent: Sysvar<'info, Rent>,
+    #[account(
+        seeds = [b"open-orders-init", dex_program.key.as_ref(), market.key.as_ref()],
+        bump = bump_init,
+    )]
+    pub open_orders_init_authority: AccountInfo<'info>,
+}
+
 // Constants.
 
 // Padding added to every serum account.
